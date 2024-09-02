@@ -17,6 +17,7 @@ const userSchema = new mongoose.Schema({
     },
     email: {
         type: String,
+        unique:true,
         required: true,
         lowercase: true,
     },
@@ -31,24 +32,25 @@ const userSchema = new mongoose.Schema({
     bannerImage: {
         type: String,
     },
-    refreshToken: {
-        type: String,
-    },
     salt: {
         type: String,
     },
-    index: true
+    passwordChangedAt:{
+        type:String,
+    },
 }, {
     timestamps: true
 })
 
 userSchema.pre("save", function (next) {
-    if (this.isModified(this.password)) {
+    if (this.isModified("password")) {
         const salt = crypto.randomBytes(16).toString()
-        const hashedPassword = crypto.reateHmac("sha256", salt).update(this.password).digest("hex")
+        const hashedPassword = crypto.createHmac("sha256", salt).update(this.password).digest("hex")
 
         this.password = hashedPassword
         this.salt = salt
+        this.passwordChangedAt = Date.now()
+        
     }
     next()
 })
@@ -59,6 +61,7 @@ userSchema.methods.generateAccessToken = function () {
         username: this.username,
         display_name: this.display_name,
         email: this.email,
+        passwordChaged:this.passwordChaged,
     }, 
     process.env.ACCESS_TOKEN_SECRET, 
     {
@@ -76,4 +79,4 @@ userSchema.methods.generateRefreshToken = function(){
     }) 
 }
 
-export const User = mongoose.model('User', userSchema)
+export const User = mongoose.model('User',userSchema)

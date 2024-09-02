@@ -1,6 +1,8 @@
 import { configDotenv } from "dotenv";
-import connect from "./DB/connect";
+import connect from "./DB/connect.js";
 import e from "express";
+import userRouter from "./routes/user.routes.js";
+import cookieParser from "cookie-parser";
 
 configDotenv()
 
@@ -18,4 +20,9 @@ connect().then(()=>{
     console.log(e.message)
     process.exit(1)
 })
+
+app.use(e.urlencoded({extended:false}))
+app.use(cookieParser())
+
+app.use('/api/user',userRouter)
 
