@@ -1,8 +1,8 @@
 import { configDotenv } from "dotenv";
-import connect from "./DB/connect.js";
+import connectDB from "./DB/connect.js";
 import e from "express";
-import userRouter from "./routes/user.routes.js";
 import cookieParser from "cookie-parser";
+import userRouter from "./routes/user.routes.js";
 
 configDotenv()
 
@@ -10,7 +10,7 @@ const app = e()
 
 const PORT = process.env.PORT
 
-connect().then(()=>{
+connectDB().then(()=>{
     console.log("MongoDB Connected")
     app.listen(PORT,()=>{
         console.log(`Starting Server on ${PORT}`)
@@ -23,6 +23,4 @@ connect().then(()=>{
 
 app.use(e.urlencoded({extended:false}))
 app.use(cookieParser())
-
-app.use('/api/user',userRouter)
-
+app.use('/api/auth',userRouter)

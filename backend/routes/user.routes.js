@@ -1,13 +1,10 @@
-import { Router } from "express";
-import verifyJWT from "../middlewares/auth.middleware.js";
-import { createAccount } from "../controllers/user.contoller.js";
+import e from "express"
+import { login, signup } from "../controllers/user.controller.js"
 
-const userRouter = Router();
 
-userRouter.route('/')
-.get((req, res) => {
-    res.send("You are in the Home page RN");
-})
-.post(createAccount)
+const userRouter = e.Router()
 
-export default userRouter;
+userRouter.post('/signup',signup)
+userRouter.post('/login',login)
+
+export default userRouter
