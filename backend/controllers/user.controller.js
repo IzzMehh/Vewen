@@ -1,4 +1,5 @@
 import { User } from "../models/user.model.js";
+import { generateJwtToken } from "../utils/generateToken.js";
 import { signupValidationSchema, loginValidationSchema } from "../utils/validation.js";
 
 async function signup(req, res) {
@@ -41,12 +42,44 @@ async function signup(req, res) {
     }
 }
 
-async function login(){
+async function login(req,res){
     try {
-    } catch (error) {
+        const {username, email, password} = req.body
+
+        if(!password || (!username && !email)){
+            return res.status(400).send("Email or username are required!!")
+        }
+
+        const user = await User.findOne({
+            $or:[
+                {username},
+                {email},
+            ]
+        })
+
+        if(!user){
+            return res.status(401).send("User dosn't exist")
+        }
+
+        const isPasswordCorrect =user.comparePassword(password)
         
+        if(!isPasswordCorrect){
+            return res.status(400).send("Wrong password")
+        }
+
+        const token = generateJwtToken(user)
+
+        const options = {
+            httpOnly:true,
+            secure:true,
+        }
+        return res.cookie('token',token,options).status(200).send(`Logged in as: ${user.username}`)
+
+    } catch (error) {
+        return res.status(500).send(error.message)
     }
 }
+
 
 export{
     signup,

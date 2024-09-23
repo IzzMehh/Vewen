@@ -40,6 +40,7 @@ const userSchema = new mongoose.Schema(
         },
         lastLoggedIn:{
             type:String,
+            default:Date.now(),
         },
         verified:{
             type:Boolean,
@@ -62,5 +63,9 @@ userSchema.pre('save',async function(next){
     }
     next()
 })
+
+userSchema.methods.comparePassword = function(password){
+    return bcrypt.compare(password, this.password)
+}
 
 export const User = mongoose.model("User",userSchema)
