@@ -48,6 +48,8 @@ const userSchema = new mongoose.Schema(
         },
         passwordResetToken:String,
         passwordResetTokenExpiredAt:String,
+        passwordResetRequestCooldown:String,
+        
         verificationToken:String,
         verificationTokenExpiredAt:String,
     },
@@ -64,8 +66,9 @@ userSchema.pre('save',async function(next){
     next()
 })
 
-userSchema.methods.comparePassword = function(password){
-    return bcrypt.compare(password, this.password)
+userSchema.methods.comparePassword = async function(password){
+    const isPasswordCorrect = await bcrypt.compare(password, this.password)
+    return isPasswordCorrect
 }
 
 export const User = mongoose.model("User",userSchema)

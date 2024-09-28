@@ -39,7 +39,7 @@ function verified(userData) {
 
   const sender = {
     email: "hello@demomailtrap.com",
-    name: "Mailtrap Test",
+    name: "VeWen",
   };
   const recipients = [
     {
@@ -90,8 +90,37 @@ function passwordChangeRequestMail(userData) {
     .then(console.log, console.error);
 }
 
+async function passwordChangedSuccessfully(userData) {
+  const TOKEN = process.env.MAILTRAP_KEY
+
+  const client = new MailtrapClient({
+    token: TOKEN,
+  });
+
+  const sender = {
+    email: "hello@demomailtrap.com",
+    name: "VeWen",
+  };
+  const recipients = [
+    {
+      email: userData.email,
+    }
+  ];
+
+  client
+    .send({
+      from: sender,
+      to: recipients,
+      template_uuid: "d7beb74e-6691-4e9e-bc2c-205900031175",
+      template_variables: {
+        "display_name": userData.display_name
+      }
+    })
+    .then(console.log, console.error);
+}
 export {
   verificationEmail,
   verified,
   passwordChangeRequestMail,
+  passwordChangedSuccessfully,
 }
