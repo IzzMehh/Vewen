@@ -1,9 +1,10 @@
 import { User } from "../models/user.model.js";
 import { generateJwtToken } from "../utils/generateToken.js";
-import { verificationEmail,verified } from "../utils/mailTrap.js";
+import { verificationEmail,verified,passwordChangeRequestMail } from "../utils/mailTrap.js";
 import randomNumber from "../utils/randomNumber.js";
 import { signupValidationSchema, loginValidationSchema } from "../utils/validation.js";
-import bcrypt, { hash } from "bcrypt"
+import bcrypt from "bcrypt"
+import crypto from "node:crypto"
 
 async function signup(req, res) {
     try {
@@ -159,9 +160,94 @@ async function verifyAccount(req,res) {
     }
 }
 
+
+
+async function passwordResetRequest(req,res){
+    try {
+
+        const { email , username } = req.body
+
+        if(!email && !username){
+            return res.status(400).send('Email or Username is required!')
+        }
+
+        const user = await User.findOne({
+            $or:[
+                {email},{username}
+            ],
+        })
+
+        if(!user){
+            return res.status(401).send("Invalid credentials")
+        }
+
+        const passwordResetToken = crypto.randomBytes(10).toString("hex")
+        const passwordResetTokenExpiredAt = Date.now() + 60 * 60 * 1000
+
+        user.passwordResetToken = passwordResetToken
+        user.passwordResetTokenExpiredAt = passwordResetTokenExpiredAt
+
+        await user.save()
+
+        passwordChangeRequestMail(user)
+
+        return res.status(200).send(`Sent password change request to: ${user.email || user.username} `)
+
+        
+    } catch (error) {
+        return res.status(500).send(error.message)
+    }
+}
+
+async function passwordReset(req,res){
+    try {
+        const { password, _id, passwordResetToken } = req.body
+
+        if(!password){
+            return res.status(400).send("Password is required")
+        }
+
+        if(!passwordResetToken){
+            return res.status(400).send("Reset Token is required")
+        }
+
+        if(!_id){
+            return res.status(400).send("User id is required")
+        }
+
+        const user = await User.findById(_id)
+        
+
+        if(!user){
+            return res.status(400).send("Invalid User")
+        }
+
+        if(user.passwordResetToken != passwordResetToken || user.passwordResetTokenExpiredAt < Date.now()){
+            return res.status(400).send("Invalid or expired Reset token")
+        }
+
+        const hashedPassword = await bcrypt.hash(password,10)
+
+        user.password = hashedPassword
+        user.passwordVersion++
+        
+        user.passwordResetToken = undefined
+        user.passwordResetTokenExpiredAt = undefined
+
+        await user.save()
+
+        return res.status(200).send("Password changed!")
+        
+    } catch (error) {
+        return res.status(500).send(error.message)
+    }
+}
+
 export{
     signup,
     login,
     getVerfication,
     verifyAccount,
+    passwordResetRequest,
+    passwordReset,
 }
