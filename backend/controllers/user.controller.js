@@ -3,7 +3,6 @@ import { generateJwtToken } from "../utils/generateToken.js";
 import { verificationEmail, verified, passwordChangeRequestMail,passwordChangedSuccessfully } from "../utils/mailTrap.js";
 import randomNumber from "../utils/randomNumber.js";
 import { signupValidationSchema, loginValidationSchema } from "../utils/validation.js";
-import bcrypt from "bcrypt"
 import crypto from "node:crypto"
 import moment from "moment"
 
@@ -232,14 +231,14 @@ async function passwordResetRequest(req, res) {
 
 async function passwordReset(req, res) {
     try {
-        const { password, _id, passwordResetToken } = req.body
+        const { newPassword, _id, passwordResetToken, currentPassword } = req.body
 
-        if (!password) {
+        if (!newPassword) {
             return res.status(400).send("Password is required")
         }
 
-        if (!passwordResetToken) {
-            return res.status(400).send("Reset Token is required")
+        if (!passwordResetToken && !currentPassword) {
+            return res.status(400).send("Reset Token or Current Password is required")
         }
 
         if (!_id) {
@@ -253,21 +252,32 @@ async function passwordReset(req, res) {
             return res.status(400).send("Invalid User")
         }
 
-        if (user.passwordResetToken != passwordResetToken || user.passwordResetTokenExpiredAt < Date.now()) {
-            return res.status(400).send("Invalid or expired Reset token")
+        if(currentPassword){
+            const isPasswordCorrect = await user.comparePassword(currentPassword)
+            if(!isPasswordCorrect){
+                return res.status(400).send('Wrong Password')
+            }
+
+            user.password = newPassword
+            user.passwordVersion++
         }
-
-        const isPasswordSameAsCurrentPassword = await user.comparePassword(password)
-
-        if(isPasswordSameAsCurrentPassword){
-            return res.status(409).send("New password can't be the same")
+        else{
+            if (user.passwordResetToken != passwordResetToken || user.passwordResetTokenExpiredAt < Date.now()) {
+                return res.status(400).send("Invalid or expired Reset token")
+            }
+    
+            const isPasswordSameAsCurrentPassword = await user.comparePassword(newPassword)
+    
+            if(isPasswordSameAsCurrentPassword){
+                return res.status(409).send("New password can't be the same")
+            }
+    
+            user.password = newPassword
+            user.passwordVersion++
+    
+            user.passwordResetToken = undefined
+            user.passwordResetTokenExpiredAt = undefined
         }
-
-        user.password = password
-        user.passwordVersion++
-
-        user.passwordResetToken = undefined
-        user.passwordResetTokenExpiredAt = undefined
 
         await user.save()
 
