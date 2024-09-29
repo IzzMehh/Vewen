@@ -3,6 +3,8 @@ import connectDB from "./DB/connect.js";
 import e from "express";
 import cookieParser from "cookie-parser";
 import userRouter from "./routes/user.routes.js";
+import postRouter from "./routes/posts.routes.js";
+import { configCloudinary } from "./utils/cloudinary.js";
 
 configDotenv()
 
@@ -21,6 +23,10 @@ connectDB().then(()=>{
     process.exit(1)
 })
 
+configCloudinary()
+
 app.use(e.urlencoded({extended:false}))
 app.use(cookieParser())
+
 app.use('/api/auth',userRouter)
+app.use('/api/post',postRouter)
