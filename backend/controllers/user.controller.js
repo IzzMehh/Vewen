@@ -1,8 +1,8 @@
 import { User } from "../models/user.model.js";
 import { generateJwtToken } from "../utils/generateToken.js";
-import { verificationEmail, verified, passwordChangeRequestMail,passwordChangedSuccessfully } from "../utils/mailTrap.js";
+import { verifyUserRequestEmail,verifyUserConfirmationEmail,passwordResetRequestEmail,passwordResetConfirmationEmail } from "../utils/mailTrap.js";
 import randomNumber from "../utils/randomNumber.js";
-import { signupValidationSchema, loginValidationSchema } from "../utils/validation.js";
+import { authValidation } from "../utils/validation.js";
 import crypto from "node:crypto"
 import moment from "moment"
 
@@ -14,7 +14,7 @@ async function signup(req, res) {
             return res.status(400).send("Email, username and password are required!!")
         }
 
-        const { error, value } = signupValidationSchema.validate(
+        const { error, value } = authValidation.validate(
             {
                 email,
                 password,
@@ -45,9 +45,9 @@ async function signup(req, res) {
 
         await user.save()
 
-        verificationEmail(user)
+        verifyUserRequestEmail(user)
 
-        res.status(200).json({ _id: user._id })
+        res.status(201).json({ _id: user._id })
 
     } catch (error) {
         return res.status(500).send(error.message)
@@ -66,7 +66,7 @@ async function login(req, res) {
             return res.status(400).send("Password is required!!")
         }
 
-        const { error, value } = loginValidationSchema.validate({
+        const { error, value } = authValidation.validate({
             username, email, password
         })
 
@@ -104,7 +104,7 @@ async function login(req, res) {
     }
 }
 
-async function getVerfication(req, res) {
+async function verifyUserRequest(req, res) {
     try {
         const { _id } = req.body
 
@@ -118,6 +118,10 @@ async function getVerfication(req, res) {
             return res.status(404).send("Invalid User")
         }
 
+        if (user.verified) {
+            return res.status(409).send("User already Verifed")
+        }
+
         if (user.verificationTokenExpiredAt >= Date.now()) {
             const cooldown = moment(Number(user.verificationTokenExpiredAt))
             const now = moment()
@@ -129,9 +133,6 @@ async function getVerfication(req, res) {
             return res.status(409).send(`Try again in ${finalCooldown}`)
         }
 
-        if (user.verified) {
-            return res.status(409).send("User already Verifed")
-        }
         const verificationToken = randomNumber()
 
         user.verificationToken = verificationToken
@@ -139,7 +140,7 @@ async function getVerfication(req, res) {
 
         await user.save()
 
-        verificationEmail(user)
+        verifyUserRequestEmail(user)
 
         return res.status(200).send('Sent another code')
 
@@ -148,7 +149,7 @@ async function getVerfication(req, res) {
     }
 }
 
-async function verifyAccount(req, res) {
+async function verifyUser(req, res) {
     try {
         const { code, _id } = req.body
 
@@ -156,6 +157,10 @@ async function verifyAccount(req, res) {
 
         if (!user) {
             return res.status(404).send("Invalid User")
+        }
+
+        if(user.verified){
+            return res.status(409).send("User already Verifed")
         }
 
         if (user.verificationToken != code || user.verificationTokenExpiredAt < Date.now()) {
@@ -168,7 +173,7 @@ async function verifyAccount(req, res) {
 
         await user.save()
 
-        verified(user)
+        verifyUserConfirmationEmail(user)
 
         return res.status(200).send('Successfully verified')
 
@@ -219,7 +224,7 @@ async function passwordResetRequest(req, res) {
 
         await user.save()
 
-        passwordChangeRequestMail(user)
+        passwordResetRequestEmail(user)
 
         return res.status(200).send(`Sent password change request to: ${user.email} `)
 
@@ -237,6 +242,18 @@ async function passwordReset(req, res) {
             return res.status(400).send("Password is required")
         }
 
+
+        const { error, value } = authValidation.validate(
+            {
+                password:newPassword,
+            }
+        )
+
+        if(error){
+            return res.status(400).send(error.message)
+        }
+
+
         if (!passwordResetToken && !currentPassword) {
             return res.status(400).send("Reset Token or Current Password is required")
         }
@@ -247,9 +264,14 @@ async function passwordReset(req, res) {
 
         const user = await User.findById(_id)
 
-
         if (!user) {
             return res.status(404).send("Invalid User")
+        }
+
+        const isPasswordSameAsCurrentPassword = await user.comparePassword(newPassword)
+    
+        if(isPasswordSameAsCurrentPassword){
+            return res.status(409).send("New password can't be the same")
         }
 
         if(currentPassword){
@@ -266,12 +288,6 @@ async function passwordReset(req, res) {
                 return res.status(400).send("Invalid or expired Reset token")
             }
     
-            const isPasswordSameAsCurrentPassword = await user.comparePassword(newPassword)
-    
-            if(isPasswordSameAsCurrentPassword){
-                return res.status(409).send("New password can't be the same")
-            }
-    
             user.password = newPassword
             user.passwordVersion++
     
@@ -281,7 +297,7 @@ async function passwordReset(req, res) {
 
         await user.save()
 
-        passwordChangedSuccessfully(user)
+        passwordResetConfirmationEmail(user)
 
         return res.status(200).send("Password changed!")
 
@@ -293,8 +309,8 @@ async function passwordReset(req, res) {
 export {
     signup,
     login,
-    getVerfication,
-    verifyAccount,
+    verifyUserRequest,
+    verifyUser,
     passwordResetRequest,
     passwordReset,
 }
