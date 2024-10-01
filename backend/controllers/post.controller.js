@@ -1,10 +1,11 @@
 import { Post } from "../models/post.model.js"
 import { uploadPostAttachments } from "../utils/cloudinary.js";
-import fs from "fs"
+import fs, { unlink } from "fs/promises"
 
 async function createPost(req,res){
     try {
         const { userId ,content } = req.body
+        const files = req.files || []
 
         if(!userId){
             return res.status(400).send("User Id is required")
@@ -14,11 +15,7 @@ async function createPost(req,res){
             return res.status(400).send('Post content is required!')
         }
 
-        const files = req.files || []
-
-        let attachments = []
-
-        await Promise.all(
+        const attachments = await Promise.all(
             files.map(async (file)=>{
                 let resource_type = file.mimetype.startsWith('video') ? 'video' : 'image' 
                 const uploadedFileUrl = await uploadPostAttachments(resource_type,file.path)
@@ -28,16 +25,17 @@ async function createPost(req,res){
                     fileType:file.mimetype,
                 }
 
-                attachments.push(fileData)
+                try {
+                    await fs.unlink(file.path);
+                } catch (error) {
+                    console.error('Error deleting file:', error);
+                }
+                
 
-                fs.unlink(file.path,(e)=>{
-                    if(e){
-                        throw new Error(e)
-                    }
-                    console.log(`deleted ${file.originalname}`)
-                })
+                return fileData
             })
         )
+        console.log(attachments)
 
         const post = await Post.create({content,userId,attachments})
 

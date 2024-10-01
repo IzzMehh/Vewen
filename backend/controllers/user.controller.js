@@ -31,7 +31,7 @@ async function signup(req, res) {
         })
 
         if (userExist) {
-            return res.status(404).send("User with that email or username Exist")
+            return res.status(404).send("User doesn't exist")
         }
 
         const user = await User.create({
@@ -82,7 +82,7 @@ async function login(req, res) {
         })
 
         if (!user) {
-            return res.status(404).send("Invalid credentials")
+            return res.status(404).send("User doesn't exist")
         }
 
         const isPasswordCorrect = await user.comparePassword(password)
@@ -115,7 +115,7 @@ async function verifyUserRequest(req, res) {
         const user = await User.findById(_id)
 
         if (!user) {
-            return res.status(404).send("Invalid User")
+            return res.status(404).send("User doesn't exist")
         }
 
         if (user.verified) {
@@ -156,7 +156,7 @@ async function verifyUser(req, res) {
         const user = await User.findById(_id)
 
         if (!user) {
-            return res.status(404).send("Invalid User")
+            return res.status(404).send("User doesn't exist")
         }
 
         if(user.verified){
@@ -202,7 +202,7 @@ async function passwordResetRequest(req, res) {
         })
 
         if (!user) {
-            return res.status(404).send("Invalid User")
+            return res.status(404).send("User doesn't exist")
         }
 
         if (user.passwordResetRequestCooldown >= Date.now()) {
@@ -265,7 +265,7 @@ async function passwordReset(req, res) {
         const user = await User.findById(_id)
 
         if (!user) {
-            return res.status(404).send("Invalid User")
+            return res.status(404).send("User doesn't exist")
         }
 
         const isPasswordSameAsCurrentPassword = await user.comparePassword(newPassword)
