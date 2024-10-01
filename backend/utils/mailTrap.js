@@ -1,6 +1,6 @@
 import { MailtrapClient } from "mailtrap"
 
-function verificationEmail(userData) {
+function verifyUserRequestEmail(userData) {
   const TOKEN = process.env.MAILTRAP_KEY
   const client = new MailtrapClient({
     token: TOKEN,
@@ -30,7 +30,7 @@ function verificationEmail(userData) {
     .then(console.log, console.error);
 }
 
-function verified(userData) {
+function verifyUserConfirmationEmail(userData) {
 
   const TOKEN = process.env.MAILTRAP_KEY
   const client = new MailtrapClient({
@@ -59,7 +59,7 @@ function verified(userData) {
     .then(console.log, console.error);
 }
 
-function passwordChangeRequestMail(userData) {
+function passwordResetRequestEmail(userData) {
 
   const TOKEN = process.env.MAILTRAP_KEY
 
@@ -90,7 +90,7 @@ function passwordChangeRequestMail(userData) {
     .then(console.log, console.error);
 }
 
-async function passwordChangedSuccessfully(userData) {
+async function passwordResetConfirmationEmail(userData) {
   const TOKEN = process.env.MAILTRAP_KEY
 
   const client = new MailtrapClient({
@@ -119,8 +119,5 @@ async function passwordChangedSuccessfully(userData) {
     .then(console.log, console.error);
 }
 export {
-  verificationEmail,
-  verified,
-  passwordChangeRequestMail,
-  passwordChangedSuccessfully,
+  verifyUserRequestEmail, verifyUserConfirmationEmail, passwordResetRequestEmail, passwordResetConfirmationEmail
 }
