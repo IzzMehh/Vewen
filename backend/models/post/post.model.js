@@ -1,25 +1,25 @@
 import mongoose from "mongoose";
 
 const postSchema = new mongoose.Schema({
-    postedBy:{
-        type:mongoose.Schema.Types.ObjectId,
-        ref:'User',
+    postedBy: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
     },
-    content:{
-        type:String,
-        maxLength:500,
-        required:true,
+    content: {
+        type: String,
+        maxLength: 500,
+        required: true,
     },
-    attachments:[
+    attachments: [
         {
-            url:String,
-            fileType:String,
-            public_id:String,
+            url: String,
+            fileType: String,
+            public_id: String,
         }
     ]
-},{
-    timestamps:true,
+}, {
+    timestamps: true,
 })
 
 
-export const Post = mongoose.model('Post',postSchema)
+export const Post = mongoose.model('Post', postSchema)

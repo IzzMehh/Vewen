@@ -10,7 +10,7 @@ function configCloudinary() {
   });
 }
 
-const uploadPostAttachments = async (resource_type,path) => {
+const uploadPostAttachments = async (resource_type, path) => {
   const options = {
     folder: "Post attachments",
     resource_type,
@@ -24,12 +24,12 @@ const uploadPostAttachments = async (resource_type,path) => {
   }
 };
 
-const deletePostAttachments = async(resource_type,public_ids) =>{
+const deletePostAttachments = async (resource_type, public_ids) => {
   try {
-    if(!Array.isArray(public_ids)){
+    if (!Array.isArray(public_ids)) {
       return null
     }
-    await cloudinary.api.delete_resources(public_ids,{resource_type})
+    await cloudinary.api.delete_resources(public_ids, { resource_type })
   } catch (error) {
     console.error(error)
   }

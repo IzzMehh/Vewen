@@ -1,6 +1,6 @@
 import { User } from "../models/user.model.js";
 import { generateJwtToken } from "../utils/generateToken.js";
-import { verifyUserRequestEmail,verifyUserConfirmationEmail,passwordResetRequestEmail,passwordResetConfirmationEmail } from "../utils/mailTrap.js";
+import { verifyUserRequestEmail, verifyUserConfirmationEmail, passwordResetRequestEmail, passwordResetConfirmationEmail } from "../utils/mailTrap.js";
 import randomNumber from "../utils/randomNumber.js";
 import { authValidation } from "../utils/validation.js";
 import crypto from "node:crypto"
@@ -62,7 +62,7 @@ async function login(req, res) {
             return res.status(400).send("Email or username are required!!")
         }
 
-        if(!password){
+        if (!password) {
             return res.status(400).send("Password is required!!")
         }
 
@@ -108,7 +108,7 @@ async function verifyUserRequest(req, res) {
     try {
         const { _id } = req.body
 
-        if(!_id){
+        if (!_id) {
             return res.status(400).send('user id must be given')
         }
 
@@ -159,7 +159,7 @@ async function verifyUser(req, res) {
             return res.status(404).send("User doesn't exist")
         }
 
-        if(user.verified){
+        if (user.verified) {
             return res.status(409).send("User already Verifed")
         }
 
@@ -245,11 +245,11 @@ async function passwordReset(req, res) {
 
         const { error, value } = authValidation.validate(
             {
-                password:newPassword,
+                password: newPassword,
             }
         )
 
-        if(error){
+        if (error) {
             return res.status(400).send(error.message)
         }
 
@@ -269,28 +269,28 @@ async function passwordReset(req, res) {
         }
 
         const isPasswordSameAsCurrentPassword = await user.comparePassword(newPassword)
-    
-        if(isPasswordSameAsCurrentPassword){
+
+        if (isPasswordSameAsCurrentPassword) {
             return res.status(409).send("New password can't be the same")
         }
 
-        if(currentPassword){
+        if (currentPassword) {
             const isPasswordCorrect = await user.comparePassword(currentPassword)
-            if(!isPasswordCorrect){
+            if (!isPasswordCorrect) {
                 return res.status(400).send('Wrong Password')
             }
 
             user.password = newPassword
             user.passwordVersion++
         }
-        else{
+        else {
             if (user.passwordResetToken != passwordResetToken || user.passwordResetTokenExpiredAt < Date.now()) {
                 return res.status(400).send("Invalid or expired Reset token")
             }
-    
+
             user.password = newPassword
             user.passwordVersion++
-    
+
             user.passwordResetToken = undefined
             user.passwordResetTokenExpiredAt = undefined
         }

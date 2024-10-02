@@ -1,13 +1,13 @@
 import joi from "joi";
 
 const authValidation = joi.object({
-    email: joi.string()
+  email: joi.string()
     .email()
     .messages({
       'string.email': 'Please enter a valid email address.',
     }),
 
-    username: joi.string()
+  username: joi.string()
     .pattern(new RegExp('^[a-zA-Z0-9_]+$'))
     .min(3)
     .max(15)
@@ -17,7 +17,7 @@ const authValidation = joi.object({
       'string.max': 'Username should not exceed 15 characters.',
     }),
 
-    password: joi.string()
+  password: joi.string()
     .min(8)
     .max(30)
     .messages({
@@ -26,6 +26,6 @@ const authValidation = joi.object({
     })
 })
 
-export{
-    authValidation
+export {
+  authValidation
 }

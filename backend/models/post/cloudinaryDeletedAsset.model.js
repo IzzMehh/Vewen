@@ -1,14 +1,14 @@
 import mongoose from "mongoose";
 
 const cloudinaryDeletedAssestSchema = new mongoose.Schema({
-    deletedAssests:[
+    deletedAssests: [
         {
-            public_id:String,
-            fileType:String,
+            public_id: String,
+            fileType: String,
         }
     ]
-},{
-    timestamps:true
+}, {
+    timestamps: true
 })
 
-export const DeletedAssests = mongoose.model('DeletedAssests',cloudinaryDeletedAssestSchema)
+export const DeletedAssests = mongoose.model('DeletedAssests', cloudinaryDeletedAssestSchema)

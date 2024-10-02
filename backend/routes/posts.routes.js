@@ -5,7 +5,7 @@ import { upload } from "../utils/multer.js";
 
 const postRouter = Router()
 
-postRouter.post('/createPost',auth,upload.array("attachment",4),createPost)
-postRouter.delete('/deletePost',auth,deletePost)
+postRouter.post('/createPost', auth, upload.array("attachment", 4), createPost)
+postRouter.delete('/deletePost', auth, deletePost)
 
 export default postRouter
