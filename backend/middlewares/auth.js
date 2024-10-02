@@ -15,7 +15,7 @@ async function auth(req,res,next){
             return res.status(401).send('Invalid JWT- unauthorized')
         }
 
-        const user = await User.findById(decode._id)
+        const user = await User.findById(decode._id).select("_id display_name username email passwordVersion profileImage lastLoggedIn verified bannerImage")
 
         if(!user){
             return res.status(401).send('Invalid user - unauthorized')
@@ -25,6 +25,11 @@ async function auth(req,res,next){
             return res.status(401).send('Expired JWT - unauthorized')
         }
 
+        req.user = {
+            ...user._doc,
+            _id:user._id.toString()
+        }
+        
         next()
 
     } catch (error) {

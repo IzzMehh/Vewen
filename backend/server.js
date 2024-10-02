@@ -5,6 +5,7 @@ import cookieParser from "cookie-parser";
 import userRouter from "./routes/user.routes.js";
 import postRouter from "./routes/posts.routes.js";
 import { configCloudinary } from "./utils/cloudinary.js";
+import { deletedAssestCleanupFn } from "./jobs/cloudinaryCleanupScheduler.js";
 
 configDotenv()
 
@@ -27,6 +28,8 @@ configCloudinary()
 
 app.use(e.urlencoded({extended:false}))
 app.use(cookieParser())
+
+deletedAssestCleanupFn()
 
 app.use('/api/auth',userRouter)
 app.use('/api/post',postRouter)

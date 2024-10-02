@@ -18,11 +18,22 @@ const uploadPostAttachments = async (resource_type,path) => {
 
   try {
     const result = await cloudinary.uploader.upload(path, options);
-    return result.url;
+    return result
   } catch (error) {
     console.error(error);
   }
 };
+
+const deletePostAttachments = async(resource_type,public_ids) =>{
+  try {
+    if(!Array.isArray(public_ids)){
+      return null
+    }
+    await cloudinary.api.delete_resources(public_ids,{resource_type})
+  } catch (error) {
+    console.error(error)
+  }
+}
 
 const uploadProfileImage = async (imagePath) => {
   const options = {
@@ -42,4 +53,5 @@ export {
   uploadPostAttachments,
   uploadProfileImage,
   configCloudinary,
+  deletePostAttachments,
 }

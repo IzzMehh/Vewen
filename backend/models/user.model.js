@@ -37,6 +37,7 @@ const userSchema = new mongoose.Schema(
         },
         bannerImage:{
             type:String,
+            default:""
         },
         lastLoggedIn:{
             type:String,

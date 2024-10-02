@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 
 const postSchema = new mongoose.Schema({
-    userId:{
+    postedBy:{
         type:mongoose.Schema.Types.ObjectId,
         ref:'User',
     },
@@ -14,6 +14,7 @@ const postSchema = new mongoose.Schema({
         {
             url:String,
             fileType:String,
+            public_id:String,
         }
     ]
 },{
