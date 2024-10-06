@@ -16,7 +16,11 @@ const postSchema = new mongoose.Schema({
             fileType: String,
             public_id: String,
         }
-    ]
+    ],
+    isEditied: {
+        type: Boolean,
+        default: false,
+    }
 }, {
     timestamps: true,
 })

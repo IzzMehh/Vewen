@@ -4,7 +4,8 @@ import { deletePostAttachments } from "../utils/cloudinary.js";
 
 
 function deletedAssestCleanupFn() {
-  cron.schedule('* * */2 * *', async () => {
+  cron.schedule('0 0 * * *', async () => {
+    console.log('Running Cloudinary Cleanup Fn')
 
     const twoDayAgo = Date.now() - 2 * 24 * 60 * 60 * 1000
 
@@ -37,8 +38,12 @@ function deletedAssestCleanupFn() {
     // console.log(assestDocumentsId)
     // console.log('.......')
 
-    await deletePostAttachments('image', imageAssestPublic_id)
-    await deletePostAttachments('video', videoAssestPublic_id)
+    if (assestDocuments.length > 0) {
+      await deletePostAttachments('image', imageAssestPublic_id)
+      await deletePostAttachments('video', videoAssestPublic_id)
+    } else {
+      console.log('Got no deleted assest')
+    }
 
     await DeletedAssests.deleteMany({
       _id: {
