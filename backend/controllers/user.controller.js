@@ -1,6 +1,6 @@
 import { User } from "../models/user.model.js";
 import { generateJwtToken } from "../utils/generateToken.js";
-import { verifyUserRequestEmail, verifyUserConfirmationEmail, passwordResetRequestEmail, passwordResetConfirmationEmail } from "../utils/mailTrap.js";
+import { verifyUserRequestEmail, verifyUserConfirmationEmail, passwordResetRequestEmail, passwordResetConfirmationEmail, emailResetRequestEmail, emailResetConfirmationEmail } from "../utils/mailTrap.js";
 import randomNumber from "../utils/randomNumber.js";
 import { authValidation } from "../utils/validation.js";
 import crypto from "node:crypto"
@@ -306,6 +306,107 @@ async function passwordReset(req, res) {
     }
 }
 
+async function emailResetRequest(req, res) {
+    try {
+        const { _id } = req.user
+
+        const user = await User.findById(_id)
+
+        if (!user) {
+            return res.status(404).send("User doesnt't exists")
+        }
+
+        if (user.emailResetTokenExpiredAt >= Date.now()) {
+            const cooldown = moment(Number(user.emailResetTokenExpiredAt))
+            const now = moment()
+            let cooldownMinutes = cooldown.diff(now, 'minutes')
+            let cooldownSeconds = cooldown.diff(now, 'seconds')
+
+            const finalCooldown = cooldownMinutes > 0 ? `${cooldownMinutes} Minutes` : `${cooldownSeconds} Seconds`
+
+            return res.status(409).send(`Try again in ${finalCooldown}`)
+        }
+
+        const verificationToken = randomNumber()
+
+        user.emailResetToken = verificationToken
+        user.emailResetTokenExpiredAt = Date.now() + 60 * 60 * 1000;
+
+        await user.save()
+
+        emailResetRequestEmail(user)
+
+        return res.status(200).send('Check your email')
+
+
+    } catch (error) {
+        return res.status(500).send(error.message)
+    }
+}
+
+
+
+async function emailReset(req, res) {
+    try {
+        const { newEmail, code, password } = req.body
+        const { _id } = req.user
+
+        if (!newEmail) {
+            return res.status(400).send("Email is required")
+        }
+
+
+        const { error, value } = authValidation.validate(
+            {
+                email: newEmail
+            }
+        )
+
+        if (error) {
+            return res.status(400).send(error.message)
+        }
+
+
+        if (!code) {
+            return res.status(400).send("OTP is required")
+        }
+
+        if (!_id) {
+            return res.status(400).send("User id is required")
+        }
+
+        const user = await User.findById(_id)
+
+        if (!user) {
+            return res.status(404).send("User doesn't exist")
+        }
+
+
+        const isPasswordCorrect = await user.comparePassword(password)
+        if (!isPasswordCorrect) {
+            return res.status(400).send('Wrong Password')
+        }
+
+        if (user.emailResetToken != code || user.emailResetTokenExpiredAt < Date.now()) {
+            return res.status(400).send("Invalid or expired OTP")
+        }
+
+        user.emailResetToken = undefined
+        user.emailResetTokenExpiredAt = undefined
+        user.email = newEmail
+
+        await user.save()
+
+        emailResetConfirmationEmail(user)
+
+        return res.status(200).send("Email changed!")
+
+    } catch (error) {
+        return res.status(500).send(error.message)
+    }
+}
+
+
 export {
     signup,
     login,
@@ -313,4 +414,6 @@ export {
     verifyUser,
     passwordResetRequest,
     passwordReset,
+    emailResetRequest,
+    emailReset,
 }
