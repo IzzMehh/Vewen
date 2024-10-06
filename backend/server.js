@@ -31,5 +31,5 @@ app.use(cookieParser())
 
 deletedAssestCleanupFn()
 
-app.use('/api/auth',userRouter)
+app.use('/api/user',userRouter)
 app.use('/api/post',postRouter)
