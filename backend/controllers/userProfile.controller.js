@@ -10,7 +10,7 @@ async function updateUserDetails(req, res) {
         })
 
         if(error){
-            res.status(400).send(error.message)
+            return res.status(400).send(error.message)
         }
 
         const updateData = {}
