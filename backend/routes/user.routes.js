@@ -1,7 +1,8 @@
 import e from "express"
 import { login, signup, verifyUser, verifyUserRequest, passwordReset, passwordResetRequest, emailResetRequest, emailReset } from "../controllers/user.controller.js"
-import { updateUserDetails } from "../controllers/userProfile.controller.js"
+import { updateUserDetails, uploadProfilePicture } from "../controllers/userProfile.controller.js"
 import auth from "../middlewares/auth.js"
+import { upload } from "../utils/multer.js"
 
 
 const userRouter = e.Router()
@@ -19,4 +20,5 @@ userRouter.patch('/emailReset', auth, emailReset)
 // UPDATE USER PROFILE
 
 userRouter.patch('/updateUserDetails', auth, updateUserDetails)
+userRouter.patch('/uploadProfilePicture', auth, upload.single('profileImg'), uploadProfilePicture)
 export default userRouter

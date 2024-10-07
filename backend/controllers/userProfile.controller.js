@@ -1,5 +1,8 @@
+import { DeletedAssests } from "../models/post/CloudinaryDeletedAsset.model.js";
 import { User } from "../models/user.model.js";
+import { uploadProfileImage } from "../utils/cloudinary.js";
 import { authValidation } from "../utils/validation.js";
+import fs from "fs/promises"
 
 async function updateUserDetails(req, res) {
     try {
@@ -9,7 +12,7 @@ async function updateUserDetails(req, res) {
             username: newUsername
         })
 
-        if(error){
+        if (error) {
             return res.status(400).send(error.message)
         }
 
@@ -72,7 +75,63 @@ async function updateUserDetails(req, res) {
     }
 }
 
+async function uploadProfilePicture(req, res) {
+    try {
+        const { _id } = req.user
+        const file = req.file
+
+        if (!file) {
+            return res.status(400).send("Profile picture required!")
+        }
+
+        if (!_id) {
+            return res.status(400).send('Cannot find user Id')
+        }
+
+        const user = await User.findById(_id)
+
+        if (!user) {
+            return res.status(404).send("User doesn't exist")
+        }
+
+        if (user.profileImage.public_id) {
+            const deletedAssests = [
+                {
+                    public_id: user.profileImage.public_id,
+                    fileType: "image",
+                }
+            ]
+            await DeletedAssests.create({ deletedAssests })
+        } else {
+            console.log('no profileimg', user.profileImage)
+        }
+
+        const uploadedProfileImg = await uploadProfileImage(file.path)
+
+        await fs.unlink(file.path)
+
+        const newProfileImgData = {
+            public_id : uploadedProfileImg.public_id,
+            url : uploadedProfileImg.url,
+        }
+
+        user.profileImage = newProfileImgData
+
+        await user.save()
+
+        return res.status(200).json({
+            message: 'Updated Profile Image',
+            url:uploadedProfileImg.url,
+        })
+
+
+    } catch (error) {
+        return res.status(500).send(error.message)
+    }
+}
+
 
 export {
     updateUserDetails,
+    uploadProfilePicture,
 }

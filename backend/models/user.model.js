@@ -32,11 +32,14 @@ const userSchema = new mongoose.Schema(
             default: 0,
         },
         profileImage: {
-            type: String,
-            url: {
+            url:{
+                type:String,
                 default: "https://th.bing.com/th/id/OIP.hGSCbXlcOjL_9mmzerqAbQHaHa?rs=1&pid=ImgDetMain",
             },
-            public_id: String
+            public_id:{
+                type:String,
+                default:null
+            }
         },
         bannerImage: {
             type: String,

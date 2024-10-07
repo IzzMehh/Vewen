@@ -39,6 +39,9 @@ function deletedAssestCleanupFn() {
     // console.log('.......')
 
     if (assestDocuments.length > 0) {
+      console.log(`deleting ${imageAssestPublic_id.length} Images & ${videoAssestPublic_id.length} Videos`)
+      console.log(imageAssestPublic_id)
+      console.log(videoAssestPublic_id)
       await deletePostAttachments('image', imageAssestPublic_id)
       await deletePostAttachments('video', videoAssestPublic_id)
     } else {

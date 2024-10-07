@@ -65,8 +65,6 @@ async function deletePost(req, res) {
             return res.status(401).send("You're not the owner of the post")
         }
 
-        console.time('filesdelete')
-
         let deletedAssests = []
 
         post.attachments.map(attachment => {

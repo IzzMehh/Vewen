@@ -42,7 +42,7 @@ const uploadProfileImage = async (imagePath) => {
 
   try {
     const result = await cloudinary.uploader.upload(imagePath, options);
-    return result.url;
+    return result;
   } catch (error) {
     console.error(error);
   }
