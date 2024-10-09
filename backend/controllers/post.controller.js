@@ -1,11 +1,12 @@
 import { DeletedAssests } from "../models/post/CloudinaryDeletedAsset.model.js";
 import { Post } from "../models/post/post.model.js"
+import { Likepost } from "../models/post/postLike.model.js";
 import { uploadPostAttachments } from "../utils/cloudinary.js";
 import fs from "fs/promises"
 
 async function createPost(req, res) {
     try {
-        const { postedBy, content } = req.body
+        const { postedBy, content, parentPost } = req.body
         const files = req.files || []
 
         if (!postedBy) {
@@ -37,7 +38,7 @@ async function createPost(req, res) {
             })
         )
 
-        const post = await Post.create({ content, postedBy, attachments })
+        const post = await Post.create({ content, postedBy, attachments, parentPost: parentPost || null })
 
         return res.status(201).send(post)
 
@@ -51,7 +52,7 @@ async function deletePost(req, res) {
     try {
         const { postId } = req.body
 
-        if(!postId){
+        if (!postId) {
             return res.status(400).send('Post Id is required')
         }
 
@@ -188,8 +189,150 @@ async function updatePost(req, res) {
     }
 }
 
+
+async function likePost(req, res) {
+    try {
+        const { postId } = req.body
+        const userId = req.user._id
+
+        if (!postId) {
+            return res.status(400).send("Post Id is required")
+        }
+
+        await Likepost.create({ userId, postId })
+
+        return res.status(200).send('Liked post')
+    } catch (error) {
+        if (error.code === 11000) {
+            return res.status(409).send("Already liked")
+        }
+        return res.status(500).send(error.message)
+    }
+}
+
+async function unLikePost(req, res) {
+    try {
+        const { postId } = req.body
+        const userId = req.user._id
+
+        if (!postId) {
+            return res.status(400).send("Post Id is required")
+        }
+
+        const post = await Likepost.findOneAndDelete({ userId, postId })
+        if (!post) {
+            return res.status(400).send("Post is not liked")
+        }
+        return res.status(200).send("Unliked Post")
+    } catch (error) {
+        return res.status(500).send(error.message)
+    }
+}
+
+async function getPost(req, res) {
+    try {
+        const { skip } = req.query
+        const post = await Post.aggregate(
+            [
+                {
+                    $sort: {
+                        createdAt: -1,
+                    },
+                },
+                {
+                    $skip: skip || 0,
+                },
+                {
+                    $limit: 10,
+                },
+                {
+                    $lookup: {
+                        from: "likeposts",
+                        localField: "_id",
+                        foreignField: "postId",
+                        as: "likes",
+                    },
+                },
+
+                {
+                    $addFields: {
+                        likes: {
+                            $size: '$likes'
+                        }
+                    }
+                },
+                {
+                    $lookup: {
+                        from: "posts",
+                        localField: "_id",
+                        foreignField: "parentPost",
+                        as: "replies"
+                    }
+                },
+                {
+                    $addFields: {
+                        replies: {
+                            $size: "$replies"
+                        }
+                    }
+                },
+                {
+                    $lookup: {
+                        from: "posts",
+                        localField: "parentPost",
+                        foreignField: "_id",
+                        as: "parentPost"
+                    }
+                },
+                {
+                    $addFields: {
+                        parentPost: {
+                            $cond: {
+                                if: {
+                                    $gt: [
+                                        {
+                                            $size: "$parentPost"
+                                        }, 0
+                                    ]
+                                },
+                                then: {
+                                    $arrayElemAt: ["$parentPost", 0]
+                                },
+                                else: null
+                            }
+                        }
+                    }
+                }
+            ]
+        )
+        return res.status(200).send(post)
+    } catch (error) {
+        return res.status(500).send(error.message)
+    }
+}
+
+
+async function getReplies(req, res) {
+    try {
+        const { postId, skip } = req.params
+
+        const replies = await Post.find({
+            parentPost: postId
+        }).skip(Number(skip) || 0).limit(10)
+
+        return res.status(200).send(replies)
+
+    } catch (error) {
+        return res.status(500).send(error.message)
+    }
+}
+
 export {
     createPost,
     deletePost,
     updatePost,
+    likePost,
+    unLikePost,
+    getPost,
+    getReplies,
 }

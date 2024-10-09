@@ -1,6 +1,6 @@
 import e from "express"
 import { login, signup, verifyUser, verifyUserRequest, passwordReset, passwordResetRequest, emailResetRequest, emailReset } from "../controllers/user.controller.js"
-import { updateUserDetails, uploadProfilePicture } from "../controllers/userProfile.controller.js"
+import { updateUserDetails, uploadProfilePicture, checkUsernameAvailability, followUser } from "../controllers/userProfile.controller.js"
 import auth from "../middlewares/auth.js"
 import { upload } from "../utils/multer.js"
 
@@ -21,4 +21,6 @@ userRouter.patch('/emailReset', auth, emailReset)
 
 userRouter.patch('/updateUserDetails', auth, updateUserDetails)
 userRouter.patch('/uploadProfilePicture', auth, upload.single('profileImg'), uploadProfilePicture)
+userRouter.get('/checkUsernameAvailability/:username', auth, checkUsernameAvailability)
+userRouter.post('/followUser', auth, followUser)
 export default userRouter

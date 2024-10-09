@@ -5,6 +5,12 @@ const postSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
     },
+    parentPost:{
+        type: mongoose.Schema.Types.ObjectId,
+        ref:"Post",
+        default:null,
+        index:1
+    },
     content: {
         type: String,
         maxLength: 500,

@@ -1,3 +1,4 @@
+import { Follow } from "../models/follow.model.js";
 import { DeletedAssests } from "../models/post/CloudinaryDeletedAsset.model.js";
 import { User } from "../models/user.model.js";
 import { uploadProfileImage } from "../utils/cloudinary.js";
@@ -131,7 +132,53 @@ async function uploadProfilePicture(req, res) {
 }
 
 
+async function checkUsernameAvailability(){
+    try {
+        const { username } = req.query
+
+        const user = await User.findOne({username})
+
+        if(!user){
+            return res.status(200).send('Available')
+        }else{
+            return res.status(409).send('Not available')
+        }
+
+    } catch (error) {
+        return res.status(500).send(error.message)
+    }
+}
+
+async function followUser(req,res){
+    try {
+        const { followUserId } = req.body
+        const { _id } = req.user
+
+        if(!followUserId){
+            return res.status(400).send('User to be followed required')
+        }
+        if(!_id){
+            return res.status(400).send("User Id required")
+        }
+
+        await Follow.create({
+            followedBy:_id,
+            followedUser:followUserId,
+        })
+
+        return res.status(200).send('followed')
+
+    } catch (error) {
+        if (error.code === 11000) {
+            return res.status(409).send("Already followed")
+        }
+        return res.status(500).send(error.message)
+    }
+}
+
 export {
     updateUserDetails,
     uploadProfilePicture,
+    checkUsernameAvailability,
+    followUser,
 }
