@@ -25,7 +25,11 @@ function Header({
   return (
     <Container>
       <div className="flex">
-        <div className="text-4xl font-bold w-[80%] ">VeWen</div>
+        <div className="text-4xl font-bold w-[80%] ">
+          <Link to={"/"}>
+            <div>VeWen</div>
+          </Link>
+        </div>
 
         <div className="w-[20%] flex justify-evenly items-center ">
           <div className="text-lg text-center ">{display_name}</div>
