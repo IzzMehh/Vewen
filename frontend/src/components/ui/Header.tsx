@@ -14,8 +14,8 @@ import {
 
 
 interface User {
-  profileImageUrl: string;
-  display_name: string;
+  profileImageUrl?: string;
+  display_name?: string;
 }
 
 function Header({

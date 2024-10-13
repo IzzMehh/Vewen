@@ -1,8 +1,8 @@
 import { Button } from "@/components/ui/Button";
 import Container from "@/components/ui/Container";
-import Navbar from "./ui/Navbar";
+import Sidebar from "./ui/Sidebar";
 import Header from "./ui/Header"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/Avatar";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -10,14 +10,14 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+} from "@/components/ui/Dropdown-menu";
 
 
 
 export {
   Button,
   Container,
-  Navbar,
+  Sidebar,
   Header,
   Avatar,
   AvatarFallback,

@@ -14,7 +14,7 @@ import App from "./App";
 const router = createBrowserRouter(
   createRoutesFromElements(
     <Route path="/" element={<App />}>
-      <Route path="/" element={<Home/>} errorElement="s"/>
+      <Route path="/" element={<Home/>}/>
       <Route path="about" element={<div>About Page</div>} />
       <Route path="*" element={<NotFound/>}/>
     </Route>

@@ -1,4 +1,6 @@
+import { Container } from '@/components'
 import React from 'react'
+
 
 function Home() {
   return (

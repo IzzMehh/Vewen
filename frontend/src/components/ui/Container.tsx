@@ -6,7 +6,7 @@ interface ContainerProps {
 
 function Container({ children }: ContainerProps):ReactElement {
   return (
-    <div className="w-full bg-light-theme dark:bg-dark-theme text-light-theme-text dark:text-dark-theme-text  p-3 ">
+    <div className="w-full h-full  bg-light-theme dark:bg-dark-theme text-light-theme-text dark:text-dark-theme-text  p-3 ">
       {children}
     </div>
   );
