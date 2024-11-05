@@ -1,13 +1,14 @@
-import { Container } from '@/components'
-import React from 'react'
-
+import { Container, Post } from "@/components";
+import React from "react";
 
 function Home() {
   return (
-    <div>
-        youre on home
-    </div>
-  )
+    <Container>
+      <div className="">
+        <Post/>
+      </div>
+    </Container>
+  );
 }
 
-export default Home
+export default Home;
