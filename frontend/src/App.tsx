@@ -6,9 +6,15 @@ import {
   Container,
 } from "./components/index";
 import { Outlet } from "react-router";
-import { useRef } from "react"
+import { useRef } from "react";
+import { useAppDispatch, useAppSelector } from "./hooks/store";
+import { updateUserPrefs } from "./store/userPreferencesSlice";
+
 function App() {
   const sidebarToggleButton = useRef<HTMLButtonElement | null>(null);
+  const userPrefs = useAppSelector((state) => state.userPref);
+  const dispatch = useAppDispatch();
+
   return (
     <Container>
       <div className="font-text h-full">
@@ -18,7 +24,7 @@ function App() {
           </div>
           <div className="flex">
             <div className="h-full provider z-0  ">
-              <SidebarProvider>
+              <SidebarProvider open={userPrefs.sidebar}>
                 <SidebarComponent />
                 <SidebarTrigger className="hidden" ref={sidebarToggleButton} />
               </SidebarProvider>
@@ -31,6 +37,12 @@ function App() {
                 onClick={() => {
                   if (sidebarToggleButton.current) {
                     sidebarToggleButton.current.click();
+                    dispatch(
+                      updateUserPrefs({
+                        ...userPrefs,
+                        sidebar: !userPrefs.sidebar,
+                      })
+                    );
                   }
                 }}
                 className="max-md:hidden flex items-center text-xl cursor-pointer hover:bg-[#ffffff30]"

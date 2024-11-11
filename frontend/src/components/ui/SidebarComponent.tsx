@@ -37,6 +37,7 @@ import {
   DropdownMenuSeparator,
   Container,
   Button,
+  ProfileDropdownMenuContentComponent,
 } from "../index";
 
 import { Link, NavLink } from "react-router-dom";
@@ -46,7 +47,7 @@ function SidebarComponent({
 }) {
   return (
     <Container>
-      <Sidebar className="h-full">
+      <Sidebar className="h-full" >
         <SidebarHeader />
         <SidebarContent className="relative mt-14">
           <SidebarMenuItem className="h-[50px] mb-2 px-2">
@@ -150,34 +151,7 @@ function SidebarComponent({
                     </div>
                   </SidebarMenuButton>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent
-                  side="top"
-                  className="dark:bg-dark-theme bg-light-theme w-[--radix-popper-anchor-width]"
-                >
-                  <Link to={"/profile"}>
-                    <DropdownMenuItem className="dark:text-dark-theme-text default-hover cursor-pointer">
-                      My Account{" "}
-                      <span className="relative top-[4px] text-lg">
-                        <ion-icon name="person-circle-outline"></ion-icon>
-                      </span>
-                    </DropdownMenuItem>
-                  </Link>
-                  <DropdownMenuSeparator className="dark:bg-light-theme bg-dark-theme" />
-
-                  <DropdownMenuItem className=" dark:text-dark-theme-text default-hover cursor-pointer">
-                    Dark Theme{" "}
-                    <span className="relative top-[2px]">
-                      <ion-icon name="moon"></ion-icon>
-                    </span>
-                  </DropdownMenuItem>
-
-                  <DropdownMenuItem className="hover:bg-red-800 hover:text-dark-theme-text hover:dark:bg-red-600 text-red-600  cursor-pointer">
-                    Logout{" "}
-                    <span className="relative top-[2px]">
-                      <ion-icon name="log-out-outline"></ion-icon>
-                    </span>
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
+                <ProfileDropdownMenuContentComponent/>
               </DropdownMenu>
             </SidebarMenuItem>
           </SidebarMenu>

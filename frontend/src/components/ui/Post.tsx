@@ -1,4 +1,4 @@
-import React, { ChangeEvent } from "react";
+import React from "react";
 import {
   Avatar,
   AvatarFallback,
@@ -21,6 +21,7 @@ import {
   CarouselNext,
 } from "../index";
 import { v4 as uuidv4 } from "uuid";
+import { useAppSelector } from "@/hooks/store";
 
 import data from "@emoji-mart/data";
 import Picker from "@emoji-mart/react";
@@ -54,9 +55,10 @@ const Post = ({
   const [visibilityType, setvisibilityType] = React.useState<string>("public");
   const [selectedFiles, setSelectedFile] = React.useState<MyFile[]>([]);
   const [isEmojiBoxOpen, setIsEmojiBoxOpen] = React.useState<boolean>(false);
+  
+  const userPrefs = useAppSelector(state=>state.userPref)
 
   const handleInputText = (): void => {
-    console.log("changee");
     const textarea = textareaRef.current;
     if (textarea) {
       textarea.style.height = "auto";
@@ -68,7 +70,7 @@ const Post = ({
 
   const handleEmoji = (e: any): void => {
     const textarea = textareaRef.current;
-    if (textarea) {
+    if (textarea && letterCount <= 300) {
       textarea.value = `${textarea.value} ${e.native}`;
       setLetterCount(textarea.value.length);
       setContent(textarea.value);
@@ -172,7 +174,7 @@ const Post = ({
                       <Picker
                         data={data}
                         onEmojiSelect={handleEmoji}
-                        theme="light"
+                        theme={userPrefs.theme}
                       />
                     </div>
                   </div>

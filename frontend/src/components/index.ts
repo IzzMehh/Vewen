@@ -61,6 +61,9 @@ import {
 } from "./ui/Sidebar";
 
 
+import ProfileDropdownMenuContentComponent from "./ui/ProfileDropdownComponent";
+
+
 export {
   Button,
   Container,
@@ -114,4 +117,5 @@ export {
   SidebarSeparator,
   SidebarTrigger,
   useSidebar,
+  ProfileDropdownMenuContentComponent,
 };
