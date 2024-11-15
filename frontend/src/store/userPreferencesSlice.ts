@@ -1,5 +1,5 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { Theme, userPreference } from "@/typings/global.ts";
+import { Theme, userPreference } from "@/typings/global";
 
 const setUserPrefs = (): userPreference => {
   const userPrefs = localStorage.getItem("userPrefs") || null;
@@ -14,9 +14,7 @@ const setUserPrefs = (): userPreference => {
       theme: Theme.system,
       sidebar: true,
     };
-    document.documentElement.classList.add(
-      `${isDarkMode}`
-    );
+    document.documentElement.classList.add(`${isDarkMode}`);
     localStorage.setItem("userPrefs", JSON.stringify(defaultUserPrefs));
 
     return defaultUserPrefs;
@@ -29,15 +27,9 @@ const setUserPrefs = (): userPreference => {
       ).matches
         ? Theme.dark
         : Theme.light;
-      document.documentElement.classList.add(
-        `${isDarkMode}`
-      );
+      document.documentElement.classList.add(`${isDarkMode}`);
     } else {
-      document.documentElement.classList.add(
-        `${
-          userPrefsJson.theme
-        }`
-      );
+      document.documentElement.classList.add(`${userPrefsJson.theme}`);
     }
     return userPrefsJson;
   }
@@ -67,9 +59,7 @@ const userPreferenceSlice = createSlice({
         ? Theme.dark
         : Theme.light;
       document.documentElement.classList.value = `h-full ${
-        action.payload.theme === "system"
-          ? systemTheme
-          : action.payload.theme
+        action.payload.theme === "system" ? systemTheme : action.payload.theme
       }`;
     },
   },
