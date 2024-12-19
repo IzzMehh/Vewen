@@ -112,8 +112,8 @@ async function uploadProfilePicture(req, res) {
         await fs.unlink(file.path)
 
         const newProfileImgData = {
-            public_id : uploadedProfileImg.public_id,
-            url : uploadedProfileImg.url,
+            public_id: uploadedProfileImg.public_id,
+            url: uploadedProfileImg.url,
         }
 
         user.profileImage = newProfileImgData
@@ -122,7 +122,7 @@ async function uploadProfilePicture(req, res) {
 
         return res.status(200).json({
             message: 'Updated Profile Image',
-            url:uploadedProfileImg.url,
+            url: uploadedProfileImg.url,
         })
 
 
@@ -132,15 +132,19 @@ async function uploadProfilePicture(req, res) {
 }
 
 
-async function checkUsernameAvailability(){
+async function checkUsernameAvailability(req, res) {
     try {
         const { username } = req.query
 
-        const user = await User.findOne({username})
+        if (!username) {
+            return res.status(400).send("Username required!")
+        }
 
-        if(!user){
+        const user = await User.findOne({ username })
+
+        if (!user) {
             return res.status(200).send('Available')
-        }else{
+        } else {
             return res.status(409).send('Not available')
         }
 
@@ -149,21 +153,42 @@ async function checkUsernameAvailability(){
     }
 }
 
-async function followUser(req,res){
+async function checkEmailAvailability(req, res) {
+    try {
+        const { email } = req.query
+
+        if (!email) {
+            return res.status(400).send("Username required!")
+        }
+
+        const user = await User.findOne({ email })
+
+        if (!user) {
+            return res.status(200).send('Available')
+        } else {
+            return res.status(409).send('Not available')
+        }
+
+    } catch (error) {
+        return res.status(500).send(error.message)
+    }
+}
+
+async function followUser(req, res) {
     try {
         const { followUserId } = req.body
         const { _id } = req.user
 
-        if(!followUserId){
+        if (!followUserId) {
             return res.status(400).send('User to be followed required')
         }
-        if(!_id){
+        if (!_id) {
             return res.status(400).send("User Id required")
         }
 
         await Follow.create({
-            followedBy:_id,
-            followedUser:followUserId,
+            followedBy: _id,
+            followedUser: followUserId,
         })
 
         return res.status(200).send('followed')
@@ -181,4 +206,5 @@ export {
     uploadProfilePicture,
     checkUsernameAvailability,
     followUser,
+    checkEmailAvailability,
 }

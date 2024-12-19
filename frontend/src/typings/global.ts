@@ -4,7 +4,39 @@ export enum Theme {
   system = "system",
 }
 
-export interface userPreference {
+export interface UserPreference {
   theme: Theme;
   sidebar: boolean;
 }
+
+export interface UserData {
+  _id: string;
+  googleId?: number;
+  display_name: string;
+  username: string;
+  email: string;
+  profileImage: {
+    url: string;
+    public_id: number | null;
+  };
+  bannerImage: string;
+  verified: boolean;
+  updatedAt: string;
+  createdAt: string;
+}
+
+export interface userCredentials {
+  googleId?: number;
+  email?: string;
+  display_name?: string;
+  verified?: boolean;
+  password?: string;
+  username?: string;
+  profileImage?: { url: string; public_id: number | null };
+}
+
+export interface FormValues {
+    username: string;
+    email: string;
+    password: string;
+  }

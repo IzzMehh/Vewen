@@ -1,5 +1,5 @@
 import React from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import {
   Container,
   Avatar,
@@ -15,6 +15,7 @@ import {
   ProfileDropdownMenuContentComponent,
 } from "../index";
 
+import { useAppSelector } from "@/hooks/store";
 
 interface User {
   profileImageUrl?: string;
@@ -25,6 +26,9 @@ function Header({
   profileImageUrl = "https://www.w3schools.com/howto/img_avatar.png",
   display_name = "IzzMehGauravv",
 }: User) {
+  const userData = useAppSelector((state) => state?.userData);
+  const navigate = useNavigate();
+  
   return (
     <div>
       <Container className="p-3">
@@ -37,22 +41,32 @@ function Header({
 
           <div className="md:w-[20%] flex justify-evenly md:items-center w-full items-end  ">
             <div className="text-lg text-center hidden md:block ">
-              {display_name}
+              {userData?.display_name || (
+                <Button
+                  className="w-full bg-dark-theme text-light-theme hover:bg-black dark:bg-light-theme dark:text-dark-theme rounded "
+                  type="submit"
+                  onClick={() => navigate("/login")}
+                >
+                  Login
+                </Button>
+              )}
             </div>
-
-            <DropdownMenu>
-              <DropdownMenuTrigger className="outline-none ml-auto md:m-0  ">
-                <Avatar>
-                  <AvatarImage src={profileImageUrl} />
-                  <AvatarFallback>U</AvatarFallback>
-                </Avatar>
-                <ProfileDropdownMenuContentComponent />
-              </DropdownMenuTrigger>
-            </DropdownMenu>
+            {userData ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger className="outline-none ml-auto md:m-0  ">
+                  <Avatar>
+                    <AvatarImage
+                      src={userData.profileImage.url || profileImageUrl}
+                    />
+                    <AvatarFallback>U</AvatarFallback>
+                  </Avatar>
+                  <ProfileDropdownMenuContentComponent />
+                </DropdownMenuTrigger>
+              </DropdownMenu>
+            ) : null}
           </div>
         </div>
       </Container>
-      <Separator className="bg-dark-theme dark:bg-light-theme" />
     </div>
   );
 }

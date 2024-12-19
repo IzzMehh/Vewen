@@ -4,6 +4,10 @@ import bcrypt from "bcrypt"
 
 const userSchema = new mongoose.Schema(
     {
+        googleId:{
+            type:String,
+            unique:true
+        },
         display_name: {
             type: String,
             minlength: 2,
@@ -25,7 +29,6 @@ const userSchema = new mongoose.Schema(
         },
         password: {
             type: String,
-            required: true,
         },
         passwordVersion: {
             type: Number,

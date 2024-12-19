@@ -17,6 +17,7 @@ import { Theme } from "@/typings/global.ts";
 
 import { useAppSelector, useAppDispatch } from "@/hooks/store";
 import { updateUserPrefs } from "@/store/userPreferencesSlice";
+import auth from "@/backend/Auth";
 
 function ProfileDropdownMenuContentComponent() {
   const userPrefs = useAppSelector((state) => state.userPref);
@@ -101,7 +102,9 @@ function ProfileDropdownMenuContentComponent() {
         </DropdownMenuContent>
       </DropdownMenu>
 
-      <DropdownMenuLabel className="hover:bg-red-800 hover:text-dark-theme-text hover:dark:bg-red-600 text-red-600  cursor-pointer">
+      <DropdownMenuLabel  
+      onClick={async()=>auth.logout()}
+       className="hover:bg-red-800 hover:text-dark-theme-text hover:dark:bg-red-600 text-red-600  cursor-pointer">
         Logout{" "}
         <span className="relative top-[2px]">
           <ion-icon name="log-out-outline"></ion-icon>

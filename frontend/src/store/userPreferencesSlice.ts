@@ -1,7 +1,7 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { Theme, userPreference } from "@/typings/global";
+import { Theme, UserPreference } from "@/typings/global";
 
-const setUserPrefs = (): userPreference => {
+const setUserPrefs = (): UserPreference => {
   const userPrefs = localStorage.getItem("userPrefs") || null;
 
   if (!userPrefs) {
@@ -10,7 +10,7 @@ const setUserPrefs = (): userPreference => {
       ? Theme.dark
       : Theme.light;
 
-    const defaultUserPrefs: userPreference = {
+    const defaultUserPrefs: UserPreference = {
       theme: Theme.system,
       sidebar: true,
     };
@@ -19,7 +19,7 @@ const setUserPrefs = (): userPreference => {
 
     return defaultUserPrefs;
   } else {
-    const userPrefsJson: userPreference = JSON.parse(userPrefs);
+    const userPrefsJson: UserPreference = JSON.parse(userPrefs);
 
     if (userPrefsJson.theme === "system") {
       const isDarkMode: Theme = window.matchMedia(
@@ -35,19 +35,17 @@ const setUserPrefs = (): userPreference => {
   }
 };
 
-const initialState: userPreference = setUserPrefs();
+const initialState: UserPreference = setUserPrefs();
 
-const userPreferenceSlice = createSlice({
-  name: "userPreference",
+const UserPreferenceSlice = createSlice({
+  name: "UserPreference",
   initialState,
   reducers: {
-    updateUserPrefs: (state, action: PayloadAction<userPreference>) => {
+    updateUserPrefs: (state, action: PayloadAction<UserPreference>) => {
       state.sidebar = action.payload.sidebar;
       state.theme = action.payload.theme;
-      console.log("HUHH");
-      console.log(action);
 
-      const userPrefs: userPreference = {
+      const userPrefs: UserPreference = {
         sidebar: action.payload.sidebar,
         theme: action.payload.theme,
       };
@@ -65,5 +63,5 @@ const userPreferenceSlice = createSlice({
   },
 });
 
-export const { updateUserPrefs } = userPreferenceSlice.actions;
-export default userPreferenceSlice.reducer;
+export const { updateUserPrefs } = UserPreferenceSlice.actions;
+export default UserPreferenceSlice.reducer;

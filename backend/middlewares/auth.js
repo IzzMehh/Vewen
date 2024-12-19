@@ -4,6 +4,7 @@ import { User } from "../models/user.model.js"
 async function auth(req, res, next) {
     try {
         const token = req.cookies.token
+        console.log(token);
 
         if (!token) {
             return res.status(401).send("unauthorized")
@@ -15,7 +16,7 @@ async function auth(req, res, next) {
             return res.status(401).send('Invalid JWT- unauthorized')
         }
 
-        const user = await User.findById(decode._id).select("_id display_name username email passwordVersion profileImage lastLoggedIn verified bannerImage")
+        const user = await User.findById(decode._id).select("_id display_name username email passwordVersion profileImage lastLoggedIn verified bannerImage googleId createdAt updatedAt")
 
         if (!user) {
             return res.status(401).send('Invalid user - unauthorized')

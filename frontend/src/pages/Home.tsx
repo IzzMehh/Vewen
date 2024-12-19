@@ -1,5 +1,5 @@
 import { Container, Post } from "@/components";
-
+import axios from "axios";
 function Home() {
   return (
     <Container>

@@ -29,7 +29,7 @@ import Picker from "@emoji-mart/react";
 interface Props {
   placeholder?: string;
   className?: string;
-  avatarUrl: string;
+  avatarUrl?: string;
 }
 
 interface MyFile extends File {
@@ -55,8 +55,9 @@ const Post = ({
   const [visibilityType, setvisibilityType] = React.useState<string>("public");
   const [selectedFiles, setSelectedFile] = React.useState<MyFile[]>([]);
   const [isEmojiBoxOpen, setIsEmojiBoxOpen] = React.useState<boolean>(false);
-  
-  const userPrefs = useAppSelector(state=>state.userPref)
+
+  const userPrefs = useAppSelector((state) => state.userPref);
+  const userData = useAppSelector((state) => state.userData);
 
   const handleInputText = (): void => {
     const textarea = textareaRef.current;
@@ -136,7 +137,9 @@ const Post = ({
       <div className="flex">
         <div className="w-[50px]">
           <Avatar>
-            <AvatarImage src={avatarUrl}></AvatarImage>
+            <AvatarImage
+              src={userData?.profileImage?.url || avatarUrl}
+            ></AvatarImage>
             <AvatarFallback>Avatar</AvatarFallback>
           </Avatar>
         </div>

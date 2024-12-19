@@ -6,6 +6,71 @@ import { authValidation } from "../utils/validation.js";
 import crypto from "node:crypto"
 import moment from "moment"
 
+
+async function continueWithGoogle(req, res) {
+    try {
+        const { googleId, email, display_name, verified, profileImage } = req.body;
+        console.log(profileImage)
+
+        if (!googleId || !email || !display_name) {
+            throw new Error("Missing required fields");
+        }
+
+        let user = await User.findOne({
+            $or: [{ googleId }, { email }],
+        });
+
+        if (!user) {
+            let username = display_name.toLowerCase().slice(0, 18).replace(/ /g, '_');
+
+            const isUsernameExist = await User.findOne({ username });
+            if (isUsernameExist) {
+                username = `${username}${randomNumber()}`;
+            }
+
+            user = await User.create({
+                email,
+                username,
+                display_name,
+                verified,
+                googleId,
+                profileImage: { url: profileImage, public_id: null },
+            });
+
+            if (!user) {
+                throw new Error("User creation failed");
+            }
+        }
+
+        const isCreatedByGoogle = await User.findOne({
+            email,
+            googleId: { $exists: true, $eq: user.googleId },
+        });
+
+        if (isCreatedByGoogle) {
+            console.log("User created via Google");
+
+            const token = generateJwtToken(user);
+
+            const options = {
+                httpOnly: true,
+                secure: true,
+            };
+
+            return res
+                .cookie("token", token, options)
+                .status(200)
+                .send("success");
+        } else {
+            throw new Error("Account already exists with a different method");
+        }
+    } catch (error) {
+        console.error(error);
+        return res.status(400).json({ error: error.message });
+    }
+}
+
+
 async function signup(req, res) {
     try {
         const { email, username, password } = req.body
@@ -47,7 +112,7 @@ async function signup(req, res) {
 
         verifyUserRequestEmail(user)
 
-        res.status(201).json({ _id: user._id })
+        await login(req, res)
 
     } catch (error) {
         return res.status(500).send(error.message)
@@ -85,6 +150,10 @@ async function login(req, res) {
             return res.status(404).send("User doesn't exist")
         }
 
+        if (!user.password) {
+            return res.status(409).send("Account created with Google")
+        }
+
         const isPasswordCorrect = await user.comparePassword(password)
 
         if (!isPasswordCorrect) {
@@ -96,7 +165,9 @@ async function login(req, res) {
         const options = {
             httpOnly: true,
             secure: true,
+            sameSite: 'None'
         }
+        console.log(token)
         return res.cookie('token', token, options).status(200).send(`Logged in as: ${user.username}`)
 
     } catch (error) {
@@ -406,8 +477,22 @@ async function emailReset(req, res) {
     }
 }
 
+function isAuthenticated(req, res) {
+    console.log(req.user)
+    return res.status(200).json(req.user)
+}
+
+function logout(req, res) {
+    if (!req.cookies.token) {
+        return res.status(401).send("You're not logged in!")
+    }
+    res.clearCookie('token');
+    return res.status(200).send(`logged out!`);
+}
+
 
 export {
+    continueWithGoogle,
     signup,
     login,
     verifyUserRequest,
@@ -416,4 +501,6 @@ export {
     passwordReset,
     emailResetRequest,
     emailReset,
+    isAuthenticated,
+    logout,
 }

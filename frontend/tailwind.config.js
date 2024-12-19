@@ -16,10 +16,8 @@ export default {
   			sm: 'calc(var(--radius) - 4px)'
   		},
   		colors: {
-  			// 'dark-theme': '#070707',
 			"dark-theme":"#18181B",
-  			'light-theme': '#EEEDF0',
-				"light-theme":'#FAFAFA',
+			"light-theme":'#FAFAFA',
   			'dark-theme-text': '#ffffffdf',
   			'light-theme-text': 'black',
   			background: 'hsl(var(--background))',

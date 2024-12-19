@@ -1,7 +1,7 @@
-import Home from "./Home"
-import NotFound from "./NotFound"
+import Home from "./Home";
+import NotFound from "./NotFound";
+import Login from "./Login";
+import SignUp from "./Signup";
 
-export {
-    Home,
-    NotFound
-}
+
+export { Home, NotFound, Login, SignUp };

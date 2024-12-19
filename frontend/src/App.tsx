@@ -1,11 +1,13 @@
+import React from "react";
 import {
   SidebarComponent,
   Header,
   SidebarProvider,
   SidebarTrigger,
   Container,
+  Toaster,
 } from "./components/index";
-import { Outlet } from "react-router";
+import { Outlet, useNavigate } from "react-router";
 import { useRef } from "react";
 import { useAppDispatch, useAppSelector } from "./hooks/store";
 import { updateUserPrefs } from "./store/userPreferencesSlice";
@@ -13,7 +15,16 @@ import { updateUserPrefs } from "./store/userPreferencesSlice";
 function App() {
   const sidebarToggleButton = useRef<HTMLButtonElement | null>(null);
   const userPrefs = useAppSelector((state) => state.userPref);
+  const userData = useAppSelector((state) => state?.userData);
+
   const dispatch = useAppDispatch();
+  const navigate = useNavigate()
+
+  React.useEffect(() => {
+    // if(!userData){
+    //   navigate("/login")
+    // }
+  }, []);
 
   return (
     <Container>
@@ -29,7 +40,7 @@ function App() {
                 <SidebarTrigger className="hidden" ref={sidebarToggleButton} />
               </SidebarProvider>
             </div>
-            <div className="w-full border-l-[1px] dark:border-white flex flex-grow flex-row-reverse">
+            <div className="w-full border-l-[1px] border-t dark:border-white flex flex-grow flex-row-reverse">
               <div className="h-full flex-1">
                 <Outlet />
               </div>
@@ -53,6 +64,7 @@ function App() {
           </div>
         </div>
       </div>
+      <Toaster />
     </Container>
   );
 }
