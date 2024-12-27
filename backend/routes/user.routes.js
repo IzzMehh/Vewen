@@ -1,5 +1,5 @@
 import e from "express"
-import { login, signup, verifyUser, verifyUserRequest, passwordReset, passwordResetRequest, emailResetRequest, emailReset, isAuthenticated, logout, continueWithGoogle } from "../controllers/user.controller.js"
+import { login, signup, verifyUserEmail, verifyUserEmailRequest, passwordReset, passwordResetRequest, emailResetRequest, emailReset, isAuthenticated, logout, continueWithGoogle, revalidateAccessToken } from "../controllers/user.controller.js"
 import { updateUserDetails, uploadProfilePicture, checkUsernameAvailability, followUser, checkEmailAvailability } from "../controllers/userProfile.controller.js"
 import auth from "../middlewares/auth.js"
 import { upload } from "../utils/multer.js"
@@ -10,14 +10,15 @@ const userRouter = e.Router()
 userRouter.post('/signup', signup)
 userRouter.post('/login', login)
 userRouter.post("/loginWithGoogle", continueWithGoogle)
-userRouter.post('/verifyUserRequest', verifyUserRequest) // get a new otp
-userRouter.patch('/verifyAccount', verifyUser)
+userRouter.patch('/verifyAccountEmail', verifyUserEmail)
+userRouter.post('/verifyUserEmailRequest', verifyUserEmailRequest) // get a new otp
 userRouter.post('/passwordResetRequest', passwordResetRequest)
 userRouter.patch('/passwordReset', passwordReset)
 userRouter.post('/emailResetRequest', auth, emailResetRequest)
 userRouter.patch('/emailReset', auth, emailReset)
-userRouter.get('/auth',auth, isAuthenticated);
+userRouter.get('/auth', auth, isAuthenticated);
 userRouter.get('/logout', auth, logout)
+userRouter.post('/revalidateAccessToken', revalidateAccessToken)
 
 // UPDATE USER PROFILE
 

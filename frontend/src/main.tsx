@@ -1,3 +1,4 @@
+import "./utils/api.ts";
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import "./index.css";
@@ -11,6 +12,7 @@ import { Home, NotFound, Login, SignUp } from "./pages/index";
 import App from "./App";
 import { Provider } from "react-redux";
 import store from "./store/store.ts";
+
 
 const router = createBrowserRouter(
   createRoutesFromElements(

@@ -6,7 +6,8 @@ const userSchema = new mongoose.Schema(
     {
         googleId:{
             type:String,
-            unique:true
+            unique:true,
+            sparse:true,
         },
         display_name: {
             type: String,
@@ -60,8 +61,8 @@ const userSchema = new mongoose.Schema(
         passwordResetTokenExpiredAt: String,
         passwordResetRequestCooldown: String,
 
-        verificationToken: String,
-        verificationTokenExpiredAt: String,
+        emailVerificationToken: String,
+        emailVerificationTokenExpiredAt: String,
 
         emailResetToken: String,
         emailResetTokenExpiredAt: String,

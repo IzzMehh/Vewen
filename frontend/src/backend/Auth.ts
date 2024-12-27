@@ -28,6 +28,7 @@ class Auth {
           createdAt,
           updatedAt,
           googleId,
+          lastLoggedIn,
         } = res.data;
 
         const userData: UserData = {
@@ -41,6 +42,7 @@ class Auth {
           createdAt,
           updatedAt,
           googleId,
+          lastLoggedIn,
         };
 
         return userData;
@@ -80,7 +82,7 @@ class Auth {
         { withCredentials: true }
       );
     } catch (error: any) {
-      console.error("Error during Google login:", error.response?.data);
+      throw error
     }
   }
 
@@ -95,6 +97,7 @@ class Auth {
         },
         { withCredentials: true }
       );
+      window.location.assign("/");
     } catch (error: any) {
       throw error;
     }
@@ -112,6 +115,7 @@ class Auth {
         },
         { withCredentials: true }
       );
+      window.location.assign("/");
     } catch (error: any) {
       throw error;
     }
@@ -134,6 +138,17 @@ class Auth {
       );
     } catch (error) {
       throw error;
+    }
+  }
+
+  async verifyAccountEmail(otp: number,_id:string) {
+    try {
+       await axios.patch(`${this.backendUrl}/api/user/verifyAccountEmail`, {
+         code: otp,
+         _id,
+       });
+    } catch (error) {
+      throw error
     }
   }
 }

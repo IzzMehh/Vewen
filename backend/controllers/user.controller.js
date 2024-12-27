@@ -1,10 +1,11 @@
 import { User } from "../models/user.model.js";
-import { generateJwtToken } from "../utils/generateToken.js";
+import { generateJwtTokens } from "../utils/generateTokens.js";
 import { verifyUserRequestEmail, verifyUserConfirmationEmail, passwordResetRequestEmail, passwordResetConfirmationEmail, emailResetRequestEmail, emailResetConfirmationEmail } from "../utils/mailTrap.js";
 import randomNumber from "../utils/randomNumber.js";
 import { authValidation } from "../utils/validation.js";
 import crypto from "node:crypto"
 import moment from "moment"
+import jwt from "jsonwebtoken"
 
 
 async function continueWithGoogle(req, res) {
@@ -25,7 +26,7 @@ async function continueWithGoogle(req, res) {
 
             const isUsernameExist = await User.findOne({ username });
             if (isUsernameExist) {
-                username = `${username}${randomNumber()}`;
+                username = `${username}${randomNumber()}`.slice(0, 18).replace(/ /g, '_');
             }
 
             user = await User.create({
@@ -38,7 +39,7 @@ async function continueWithGoogle(req, res) {
             });
 
             if (!user) {
-                throw new Error("User creation failed");
+                return res.status(400).send("User creation failed");
             }
         }
 
@@ -48,25 +49,22 @@ async function continueWithGoogle(req, res) {
         });
 
         if (isCreatedByGoogle) {
-            console.log("User created via Google");
 
-            const token = generateJwtToken(user);
+            const { accessToken, refreshToken } = generateJwtTokens(user)
 
             const options = {
                 httpOnly: true,
                 secure: true,
             };
 
-            return res
-                .cookie("token", token, options)
-                .status(200)
-                .send("success");
+            return res.cookie('accessToken', accessToken, options).cookie('refreshToken', refreshToken, { ...options, maxAge: 7 * 24 * 60 * 60 * 1000 }).status(200).send(`Logged in as: ${user.username}`)
+
         } else {
-            throw new Error("Account already exists with a different method");
+            return res.status(409).send("Account already exists with a different method");
         }
     } catch (error) {
         console.error(error);
-        return res.status(400).json({ error: error.message });
+        return res.status(400).json(error.message);
     }
 }
 
@@ -78,6 +76,7 @@ async function signup(req, res) {
         if (!email || !username || !password) {
             return res.status(400).send("Email, username and password are required!!")
         }
+        console.log('ee')
 
         const { error, value } = authValidation.validate(
             {
@@ -94,6 +93,7 @@ async function signup(req, res) {
         const userExist = await User.findOne({
             $or: [{ email }, { username }]
         })
+        console.log('ee2')
 
         if (userExist) {
             return res.status(404).send("User doesn't exist")
@@ -105,8 +105,8 @@ async function signup(req, res) {
 
         const verificationToken = randomNumber()
 
-        user.verificationToken = verificationToken
-        user.verificationTokenExpiredAt = Date.now() + 15 * 60 * 1000;
+        user.emailVerificationToken = verificationToken
+        user.emailVerificationTokenExpiredAt = Date.now() + 15 * 60 * 1000;
 
         await user.save()
 
@@ -160,22 +160,24 @@ async function login(req, res) {
             return res.status(400).send("Wrong password")
         }
 
-        const token = generateJwtToken(user)
+        user.lastLoggedIn = Date.now()
+        await user.save()
+
+        const { accessToken, refreshToken } = generateJwtTokens(user)
 
         const options = {
             httpOnly: true,
             secure: true,
             sameSite: 'None'
         }
-        console.log(token)
-        return res.cookie('token', token, options).status(200).send(`Logged in as: ${user.username}`)
+        return res.cookie('accessToken', accessToken, options).cookie('refreshToken', refreshToken, { ...options, maxAge: 7 * 24 * 60 * 60 * 1000 }).status(200).send(`Logged in as: ${user.username}`)
 
     } catch (error) {
         return res.status(500).send(error.message)
     }
 }
 
-async function verifyUserRequest(req, res) {
+async function verifyUserEmailRequest(req, res) {
     try {
         const { _id } = req.body
 
@@ -193,7 +195,7 @@ async function verifyUserRequest(req, res) {
             return res.status(409).send("User already Verifed")
         }
 
-        if (user.verificationTokenExpiredAt >= Date.now()) {
+        if (user.emailVerificationTokenExpiredAt >= Date.now()) {
             const cooldown = moment(Number(user.verificationTokenExpiredAt))
             const now = moment()
             let cooldownMinutes = cooldown.diff(now, 'minutes')
@@ -206,8 +208,8 @@ async function verifyUserRequest(req, res) {
 
         const verificationToken = randomNumber()
 
-        user.verificationToken = verificationToken
-        user.verificationTokenExpiredAt = Date.now() + 15 * 60 * 1000;
+        user.emailVerificationToken = verificationToken
+        user.emailVerificationTokenExpiredAt = Date.now() + 15 * 60 * 1000;
 
         await user.save()
 
@@ -220,7 +222,7 @@ async function verifyUserRequest(req, res) {
     }
 }
 
-async function verifyUser(req, res) {
+async function verifyUserEmail(req, res) {
     try {
         const { code, _id } = req.body
 
@@ -234,13 +236,13 @@ async function verifyUser(req, res) {
             return res.status(409).send("User already Verifed")
         }
 
-        if (user.verificationToken != code || user.verificationTokenExpiredAt < Date.now()) {
+        if (user.emailVerificationToken != code || user.emailVerificationTokenExpiredAt < Date.now()) {
             return res.status(401).send("Expired or Invalid Code")
         }
 
         user.verified = true
-        user.verificationToken = undefined
-        user.verificationTokenExpiredAt = undefined
+        user.emailVerificationToken = undefined
+        user.emailVerificationTokenExpiredAt = undefined
 
         await user.save()
 
@@ -478,7 +480,6 @@ async function emailReset(req, res) {
 }
 
 function isAuthenticated(req, res) {
-    console.log(req.user)
     return res.status(200).json(req.user)
 }
 
@@ -490,17 +491,41 @@ function logout(req, res) {
     return res.status(200).send(`logged out!`);
 }
 
+async function revalidateAccessToken(req, res) {
+    try {
+        const oldRefreshToken = req.cookies.refreshToken
+        if (!oldRefreshToken) {
+            return res.cookie(400).send("unable to login")
+        }
+        const decode = jwt.verify(oldRefreshToken, process.env.JWT_REFRESH_KEY)
+
+        const user = await User.findById(decode._id)
+
+        const { accessToken, refreshToken } = generateJwtTokens(user)
+
+        const options = {
+            httpOnly: true,
+            secure: true,
+        };
+
+        return res.cookie('accessToken', accessToken, options).cookie('refreshToken', refreshToken, { ...options, maxAge: 7 * 24 * 60 * 60 * 1000 }).status(200).send(`Logged in as: ${user.username}`)
+
+    } catch (error) {
+        return res.status(500).send(`${error.message}`)
+    }
+}
 
 export {
     continueWithGoogle,
     signup,
     login,
-    verifyUserRequest,
-    verifyUser,
+    verifyUserEmailRequest,
+    verifyUserEmail,
     passwordResetRequest,
     passwordReset,
     emailResetRequest,
     emailReset,
     isAuthenticated,
     logout,
+    revalidateAccessToken,
 }

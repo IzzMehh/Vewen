@@ -65,6 +65,25 @@ import { Input } from "./ui/Input";
 import { Label } from "./ui/Label";
 import { Toaster } from "./ui/Toaster";
 import { Toast } from "./ui/Toast";
+import {
+  InputOTP,
+  InputOTPGroup,
+  InputOTPSlot,
+  InputOTPSeparator,
+} from "./ui/input-otp";
+import {
+  Dialog,
+  DialogPortal,
+  DialogOverlay,
+  DialogTrigger,
+  DialogClose,
+  DialogContent,
+  DialogHeader,
+  DialogFooter,
+  DialogTitle,
+  DialogDescription,
+} from "./ui/dialog";
+import VerifyAccountEmail from "./ui/VerifyAccountEmail";
 
 export {
   Button,
@@ -124,4 +143,19 @@ export {
   Label,
   Toaster,
   Toast,
+  InputOTP,
+  InputOTPGroup,
+  InputOTPSlot,
+  InputOTPSeparator,
+  Dialog,
+  DialogPortal,
+  DialogOverlay,
+  DialogTrigger,
+  DialogClose,
+  DialogContent,
+  DialogHeader,
+  DialogFooter,
+  DialogTitle,
+  DialogDescription,
+  VerifyAccountEmail,
 };

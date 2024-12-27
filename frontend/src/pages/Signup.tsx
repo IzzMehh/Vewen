@@ -18,7 +18,6 @@ import { useNavigate } from "react-router-dom";
 import { useAppSelector } from "@/hooks/store";
 import { initializeGoogleLogin } from "@/utils/loginWithGoogle";
 import auth from "@/backend/Auth";
-import { authValidation } from "@/utils/authValidation";
 import { useToast } from "@/hooks/use-toast";
 import { FormValues } from "@/typings/global";
 import { useForm, SubmitHandler } from "react-hook-form";
@@ -54,26 +53,8 @@ function SignUp() {
   const handleSignup: SubmitHandler<FormValues> = async (data) => {
     const { username, email, password } = data;
 
-    const { error } = authValidation.validate({ username, email, password });
-
-    if (error) {
-      toast({
-        title: "Validation Error",
-        description: error.message,
-        variant: "destructive",
-        className: "bg-red-600",
-      });
-      return;
-    }
-
     try {
       await auth.signUp({ username, email, password });
-      window.location.assign("/")
-      // toast({
-      //   title: "Success",
-      //   description: "Logged in successfully!",
-      //   className: "bg-green-600",
-      // });
     } catch (loginError: any) {
       toast({
         title: "Signup Failed",

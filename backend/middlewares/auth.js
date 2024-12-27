@@ -3,16 +3,21 @@ import { User } from "../models/user.model.js"
 
 async function auth(req, res, next) {
     try {
-        const token = req.cookies.token
-        console.log(token);
+        const refreshToken = req.cookies.refreshToken
+        const accessToken = req.cookies.accessToken
 
-        if (!token) {
+        if (!refreshToken) {
+            return res.status(400).send('unable to login')
+        }
+
+        if (!accessToken) {
             return res.status(401).send("unauthorized")
         }
 
-        const decode = jwt.verify(token, process.env.JWT_KEY)
-
-        if (!decode) {
+        let decode;
+        try {
+            decode = jwt.verify(accessToken, process.env.JWT_ACCESS_KEY)
+        } catch (error) {
             return res.status(401).send('Invalid JWT- unauthorized')
         }
 

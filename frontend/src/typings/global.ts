@@ -23,6 +23,7 @@ export interface UserData {
   verified: boolean;
   updatedAt: string;
   createdAt: string;
+  lastLoggedIn:string;
 }
 
 export interface userCredentials {
@@ -37,6 +38,7 @@ export interface userCredentials {
 
 export interface FormValues {
     username: string;
+    emailOrUsername?:string
     email: string;
     password: string;
   }

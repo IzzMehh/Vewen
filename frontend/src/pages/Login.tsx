@@ -13,7 +13,6 @@ import {
   Container,
   Separator,
   Toaster,
-  Toast,
 } from "@/components/index";
 import { useNavigate } from "react-router-dom";
 
@@ -23,57 +22,44 @@ import { useAppSelector } from "@/hooks/store";
 import { initializeGoogleLogin } from "@/utils/loginWithGoogle";
 import auth from "@/backend/Auth";
 import { useToast } from "@/hooks/use-toast";
-import { authValidation } from "@/utils/authValidation";
+import { FormValues } from "@/typings/global";
+import { useForm, SubmitHandler } from "react-hook-form";
 
 function Login() {
-  const [usernameOrEmail, setUsernameOrEmail] = useState("");
-  const [password, setPassword] = useState("");
   const [passwordVisibility, setPasswordVisibility] = React.useState(false);
   const userData = useAppSelector((state) => state.userData);
   const isUserLoggedIn = userData ? true : false;
+  type typeOfDetail = "email" | "username";
+  let type: typeOfDetail;
 
   const navigate = useNavigate();
   const googleButtonRef = React.useRef<HTMLDivElement | null>(null);
 
-  const passwordInputRef = React.useRef<HTMLInputElement | null>(null);
   const { toast } = useToast();
 
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isValid },
+  } = useForm<FormValues>({ mode: "onChange" });
+
   React.useEffect(() => {
-    initializeGoogleLogin(isUserLoggedIn, googleButtonRef.current);
+    if (userData) {
+      navigate("/");
+    }
+      initializeGoogleLogin(isUserLoggedIn, googleButtonRef.current,toast);
+
   }, []);
 
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    const isEmail = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(
-      usernameOrEmail
-    );
-
-    const payload = isEmail
-      ? { email: usernameOrEmail, password }
-      : { username: usernameOrEmail, password };
-
-    const { error } = authValidation.validate(payload);
-
-    if (error) {
-      toast({
-        title: "Validation Error",
-        description: error.message,
-        variant: "destructive",
-        className: "bg-red-600",
-      });
-      return;
-    }
-
+  const handleLogin: SubmitHandler<FormValues> = async (data) => {
     try {
-      await auth.logIn(payload);
-      const d= await auth.getSession()
-      console.log(d)
-      toast({
-        title: "Success",
-        description: "Logged in successfully!",
-        className: "bg-green-600",
-      });
+      const { emailOrUsername, password } = data;
+
+      if ((type = "email")) {
+        await auth.logIn({ email: emailOrUsername, password });
+      } else {
+        await auth.logIn({ username: emailOrUsername, password });
+      }
     } catch (loginError: any) {
       toast({
         title: "Login Failed",
@@ -87,15 +73,20 @@ function Login() {
 
   const togglePasswordVisibility = (): void => {
     setPasswordVisibility((prevVal) => !prevVal);
-    if (passwordVisibility) {
-      if (passwordInputRef.current) {
-        passwordInputRef.current.type = "password";
-      }
-    } else {
-      if (passwordInputRef.current) {
-        passwordInputRef.current.type = "text";
-      }
-    }
+  };
+
+  const checkIfEmailOrPassword = (
+    emailOrUsername: string | undefined
+  ): string | boolean => {
+    if (emailOrUsername === undefined) return "Email or Username is Required";
+
+    const isEmail = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(
+      emailOrUsername
+    );
+
+    type = isEmail ? "email" : "username";
+
+    return true;
   };
 
   return (
@@ -114,24 +105,33 @@ function Login() {
                 Log in to your account
               </CardDescription>
             </CardHeader>
-            <form onSubmit={handleLogin}>
+            <form onSubmit={handleSubmit(handleLogin)}>
               <CardContent className="space-y-4">
                 <div className="space-y-2 relative">
                   <Label
-                    htmlFor="email"
+                    htmlFor="emailOrUsername"
                     className="text-sm absolute top-[-10px] bg-light-theme dark:bg-dark-theme left-2"
                   >
                     Email or username
                   </Label>
                   <Input
-                    id="email"
+                    {...register("emailOrUsername", {
+                      required: {
+                        value: true,
+                        message: "Email or Username is Required",
+                      },
+                      validate: checkIfEmailOrPassword,
+                    })}
+                    id="emailOrUsername"
                     type="text"
                     placeholder="Email or username"
-                    required
-                    value={usernameOrEmail}
                     className="rounded"
-                    onChange={(e) => setUsernameOrEmail(e.target.value)}
                   />
+                  {errors.emailOrUsername && (
+                    <p className="text-red-600">
+                      {errors.emailOrUsername.message}
+                    </p>
+                  )}
                 </div>
                 <div className="space-y-2 relative">
                   <Label
@@ -141,15 +141,26 @@ function Login() {
                     Password
                   </Label>
                   <Input
+                    {...register("password", {
+                      required: {
+                        value: true,
+                        message: "Password is required.",
+                      },
+                      maxLength: {
+                        value: 30,
+                        message: "Password should not exceed 30 characters",
+                      },
+                      minLength: {
+                        value: 8,
+                        message: "Password must be at least 8 characters long.",
+                      },
+                    })}
                     id="password"
-                    type="password"
+                    type={passwordVisibility ? "text" : "password"}
                     className="rounded"
                     required
                     placeholder="••••••••"
-                    ref={passwordInputRef}
-                    value={password}
                     autoComplete="on"
-                    onChange={(e) => setPassword(e.target.value)}
                   />
                   {passwordVisibility ? (
                     <span
@@ -166,10 +177,17 @@ function Login() {
                       <ion-icon name="eye-off"></ion-icon>
                     </span>
                   )}
+                  {errors.password && (
+                    <p className="text-red-600">{errors.password.message}</p>
+                  )}
                 </div>
 
                 <Button
-                  className="w-full bg-dark-theme text-light-theme hover:bg-black dark:bg-light-theme dark:text-dark-theme rounded "
+                  className={`w-full hover:bg-black text-light-theme dark:text-dark-theme ${
+                    isValid
+                      ? " bg-dark-theme dark:bg-light-theme "
+                      : "bg-[#0000008f] dark:bg-[#ffffff9e] cursor-not-allowed"
+                  } rounded `}
                   type="submit"
                 >
                   Login
